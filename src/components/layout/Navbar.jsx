@@ -4,7 +4,7 @@ const Navbar = ({ onHome }) => {
   return (
     <nav style={styles.navbar}>
       <div style={styles.logo} onClick={onHome}>
-        🎮 Game Hub
+        🎮 Game Lah
       </div>
     </nav>
   );
