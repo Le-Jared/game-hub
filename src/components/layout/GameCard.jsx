@@ -56,4 +56,6 @@ const GameCard = ({ game, onSelect }) => {
       lineHeight: '1.5',
     },
   };
+
+export default GameCard;
   
