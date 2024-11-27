@@ -7,13 +7,6 @@ export const games = [
       difficulty: 'Intermediate'
     },
     {
-      id: 'tictactoe',
-      title: 'Tic Tac Toe',
-      description: 'Classic X and O game',
-      thumbnail: '⭕',
-      difficulty: 'Beginner'
-    },
-    {
       id: 'memory',
       title: 'Memory Game',
       description: 'Match pairs of cards',

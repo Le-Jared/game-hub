@@ -2,10 +2,9 @@ import React, { useState } from 'react';
 import Navbar from './Navbar';
 import GameCard from './GameCard';
 import { games } from '../../constants/games';
-import Connections from '../games/Connections';
-import TicTacToe from '../games/TicTacToe';
-import MemoryGame from '../games/MemoryGame';
-import WordScramble from '../games/WordScramble';
+import Connections from '../games/Connections/Connections';
+import MemoryGame from '../games/MemoryGame/MemoryGame';
+import WordScramble from '../games/WordScramble/WordScramble';
 
 const GameHub = () => {
   const [selectedGame, setSelectedGame] = useState(null);

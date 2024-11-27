@@ -26,22 +26,26 @@ export const memoryCards = [
       category: 'Colors',
       words: ['RED', 'BLUE', 'GREEN', 'YELLOW'],
       difficulty: 'easy',
+      color: '#ffcccc' 
     },
     {
       category: 'Animals',
       words: ['LION', 'TIGER', 'BEAR', 'WOLF'],
       difficulty: 'medium',
+      color: '#cce5ff' 
     },
     {
       category: 'Countries',
       words: ['FRANCE', 'SPAIN', 'ITALY', 'GERMANY'],
       difficulty: 'medium',
+      color: '#d4edda' 
     },
     {
       category: 'Fruits',
       words: ['APPLE', 'BANANA', 'ORANGE', 'GRAPE'],
       difficulty: 'easy',
-    },
+      color: '#fff3cd' 
+    }
   ];
   
   // Game Difficulties
