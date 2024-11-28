@@ -15,9 +15,21 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-app.use(cors());
+// CORS configuration
+app.use(cors({
+  origin: process.env.NODE_ENV === 'production' 
+    ? ['https://your-domain.vercel.app', 'https://game-hub-coral.vercel.app'] 
+    : 'http://localhost:5173',
+  methods: ['GET', 'POST'],
+  credentials: true
+}));
+
 app.use(express.json());
-app.use(express.static(path.join(__dirname, 'dist')));
+
+// Serve static files in production
+if (process.env.NODE_ENV === 'production') {
+  app.use(express.static(path.join(__dirname, 'dist')));
+}
 
 async function generateConnectionGroups() {
   const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
@@ -43,12 +55,10 @@ Rules:
     const response = await result.response;
     let text = response.text().trim();
 
-    // Remove any markdown formatting or extra text
     if (text.includes('[')) {
       text = text.substring(text.indexOf('['), text.lastIndexOf(']') + 1);
     }
 
-    // Attempt to parse JSON
     let parsed;
     try {
       parsed = JSON.parse(text);
@@ -58,14 +68,12 @@ Rules:
       throw new Error('Invalid JSON response');
     }
 
-    // Validate the structure
     if (!Array.isArray(parsed)) {
       throw new Error('Response is not an array');
     }
 
     const validColors = ['#FDB347', '#B7A5DE', '#85C0F9', '#F9A58B'];
     
-    // Validate and clean each group
     const validGroups = parsed.filter(group => {
       try {
         return (
@@ -97,21 +105,18 @@ let connectionCache = [];
 
 app.get('/api/connections', async (req, res) => {
   try {
-    // Generate new groups if cache is empty
     if (connectionCache.length < 4) {
       try {
         const newConnections = await generateConnectionGroups();
         connectionCache = [...connectionCache, ...newConnections];
       } catch (error) {
         console.error('Cache replenishment error:', error);
-        // If we have at least 4 groups in cache, continue; otherwise, throw
         if (connectionCache.length < 4) {
           throw error;
         }
       }
     }
 
-    // Send 4 groups
     const groupsToSend = connectionCache.splice(0, 4);
     res.json(groupsToSend);
 
@@ -124,10 +129,19 @@ app.get('/api/connections', async (req, res) => {
   }
 });
 
+// Catch-all route for SPA
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+  if (process.env.NODE_ENV === 'production') {
+    res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+  } else {
+    res.status(404).send('Not found');
+  }
 });
 
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+  });
+}
+
+export default app;
