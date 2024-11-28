@@ -9,6 +9,28 @@ const MemoryGame = () => {
   const [disabled, setDisabled] = useState(false);
   const [score, setScore] = useState(0);
   const [moves, setMoves] = useState(0);
+  const [timer, setTimer] = useState(0);
+  const [isActive, setIsActive] = useState(false);
+  const [streak, setStreak] = useState(0);
+  const [bestStreak, setBestStreak] = useState(0);
+
+  // Timer
+  useEffect(() => {
+    let interval = null;
+    if (isActive && score < memoryCards.length) {
+      interval = setInterval(() => {
+        setTimer(timer => timer + 1);
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [isActive, score]);
+
+  // Format time
+  const formatTime = (seconds) => {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+  };
 
   // Shuffle cards
   const shuffleCards = () => {
@@ -21,6 +43,9 @@ const MemoryGame = () => {
     setCards(shuffledCards);
     setScore(0);
     setMoves(0);
+    setTimer(0);
+    setIsActive(true);
+    setStreak(0);
   };
 
   // Handle choice
@@ -45,9 +70,14 @@ const MemoryGame = () => {
           });
         });
         setScore(prev => prev + 1);
+        setStreak(prev => prev + 1);
+        setBestStreak(prev => Math.max(prev, streak + 1));
         resetTurn();
       } else {
-        setTimeout(() => resetTurn(), 1000);
+        setTimeout(() => {
+          resetTurn();
+          setStreak(0);
+        }, 1000);
       }
     }
   }, [choiceOne, choiceTwo]);
@@ -64,6 +94,13 @@ const MemoryGame = () => {
     shuffleCards();
   }, []);
 
+  // Stop timer when game is complete
+  useEffect(() => {
+    if (score === memoryCards.length) {
+      setIsActive(false);
+    }
+  }, [score]);
+
   return (
     <div style={styles.container}>
       <div style={styles.header}>
@@ -74,8 +111,11 @@ const MemoryGame = () => {
       </div>
 
       <div style={styles.stats}>
+        <div>Time: {formatTime(timer)}</div>
         <div>Moves: {moves}</div>
         <div>Matches: {score}</div>
+        <div>Streak: {streak}</div>
+        <div>Best Streak: {bestStreak}</div>
       </div>
 
       <div style={styles.grid}>
@@ -100,7 +140,9 @@ const MemoryGame = () => {
 
       {score === memoryCards.length && (
         <div style={styles.victoryMessage}>
-          Congratulations! You've completed the game in {moves} moves!
+          Congratulations! You've completed the game in {moves} moves and {formatTime(timer)}!
+          <br />
+          Best Streak: {bestStreak}
         </div>
       )}
     </div>
