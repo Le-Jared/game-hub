@@ -105,52 +105,6 @@ app.get('/api/connections', async (req, res) => {
 });
 
 
-app.get('/api/words', async (req, res) => {
-  const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
-  
-  const prompt = `Generate 10 words and their hints as a JSON array. Format:
-[
-  {
-    "word": "WORD",
-    "hint": "Brief description or clue"
-  }
-]
-Rules:
-1. Words should be programming or technology related
-2. Words must be in UPPERCASE
-3. Hints should be clear and concise
-4. No duplicate words
-5. Return ONLY valid JSON`;
-
-  try {
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    let text = response.text().trim();
-
-    if (text.includes('[')) {
-      text = text.substring(text.indexOf('['), text.lastIndexOf(']') + 1);
-    }
-
-    const words = JSON.parse(text);
-
-    const validWords = words.filter(item => 
-      item.word && 
-      item.hint && 
-      typeof item.word === 'string' && 
-      typeof item.hint === 'string'
-    );
-
-    res.json(validWords);
-  } catch (error) {
-    console.error('Error generating words:', error);
-    res.status(500).json({ 
-      error: 'Failed to generate words',
-      details: error.message 
-    });
-  }
-});
-
-
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
