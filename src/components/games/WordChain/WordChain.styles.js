@@ -44,6 +44,7 @@ export const styles = {
       backgroundColor: '#f0f0f0',
       padding: '5px 10px',
       borderRadius: '3px',
+      color: '#000000', 
     },
     instructions: {
       backgroundColor: '#f8f9fa',

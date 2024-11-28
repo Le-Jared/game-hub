@@ -183,11 +183,12 @@ export const styles = {
   },
   gameGrid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(4, 1fr)',
-    gap: '24px',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+    gap: 'clamp(16px, 2vw, 24px)',
     maxWidth: '1400px',
     margin: '0 auto',
-    padding: '20px',
+    padding: 'clamp(12px, 2vw, 20px)',
+    width: '100%',
   },
 };
   
