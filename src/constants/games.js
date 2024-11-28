@@ -19,5 +19,10 @@ export const games = [
       title: 'Spelling Bee',
       description: 'Spell the words',
     },
+    {
+      id: 'wordchain',
+      title: 'Word Chain',
+      description: 'Make a chain of words',
+    },
   ];
   

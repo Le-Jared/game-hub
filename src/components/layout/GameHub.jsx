@@ -6,6 +6,7 @@ import Connections from '../games/Connections/Connections';
 import MemoryGame from '../games/MemoryGame/MemoryGame';
 import WordScramble from '../games/WordScramble/WordScramble';
 import SpellingBee from '../games/SpellingBee/SpellingBee';
+import WordChain from '../games/WordChain/WordChain';
 
 const GameHub = () => {
   const [selectedGame, setSelectedGame] = useState(null);
@@ -28,6 +29,8 @@ const GameHub = () => {
         return <MemoryGame />;
       case 'wordscramble':
         return <WordScramble />;
+      case 'wordchain':
+        return <WordChain />;
       default:
         return null;
     }
@@ -177,7 +180,15 @@ export const styles = {
     fontSize: 'clamp(1rem, 1.5vw, 1.2rem)',
     color: '#666',
     marginTop: '10px',
-  }
+  },
+  gameGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(4, 1fr)',
+    gap: '24px',
+    maxWidth: '1400px',
+    margin: '0 auto',
+    padding: '20px',
+  },
 };
   
 
