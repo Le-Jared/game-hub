@@ -10,15 +10,6 @@ export const memoryCards = [
   { id: 8, emoji: '🐼', matched: false },
 ];
 
-export const wordsList = [
-  { word: 'REACT', hint: 'A JavaScript library for building user interfaces' },
-  { word: 'JAVASCRIPT', hint: 'A popular programming language' },
-  { word: 'COMPONENT', hint: 'A reusable piece of UI' },
-  { word: 'FUNCTION', hint: 'A block of reusable code' },
-  { word: 'ARRAY', hint: 'An ordered collection of items' },
-  { word: 'OBJECT', hint: 'A collection of key-value pairs' },
-];
-
 export const connectionGroups = [
   {
     category: 'THINGS THAT HAVE SPOTS',

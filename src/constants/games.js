@@ -12,7 +12,7 @@ export const games = [
     {
       id: 'wordscramble',
       title: 'Word Scramble',
-      description: 'Unscramble the words (Local Only)',
+      description: 'Unscramble the words',
     },
     {
       id: 'spellingbee',
