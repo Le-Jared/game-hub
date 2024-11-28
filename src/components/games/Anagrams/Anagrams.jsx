@@ -7,89 +7,131 @@ const AnagramGame = () => {
   const [validWords, setValidWords] = useState(new Set());
   const [foundWords, setFoundWords] = useState(new Set());
   const [score, setScore] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(180); // 3 minutes
+  const [timeLeft, setTimeLeft] = useState(180);
   const [message, setMessage] = useState('');
   const [isLoading, setIsLoading] = useState(true);
-  const [gameState, setGameState] = useState('start'); // 'start', 'playing', 'gameOver'
+  const [gameState, setGameState] = useState('start');
+  const [wordsList, setWordsList] = useState([]);
 
-  const fetchBaseWord = async () => {
-    try {
-      // Fetch a random word between 6-8 letters
-      const response = await fetch('https://api.datamuse.com/words?sp=???????&max=100');
-      const words = await response.json();
-      const filteredWords = words
-        .filter(word => 
-          word.word.length >= 6 && 
-          word.word.length <= 8 && 
-          /^[a-zA-Z]+$/.test(word.word)
-        )
-        .map(word => word.word.toLowerCase());
-      
-      if (filteredWords.length === 0) throw new Error('No suitable words found');
-      
-      const randomWord = filteredWords[Math.floor(Math.random() * filteredWords.length)];
-      return randomWord;
-    } catch (error) {
-      console.error('Error fetching base word:', error);
-      // Fallback words if API fails
-      const fallbackWords = ['elephant', 'rainbow', 'station', 'picture'];
-      return fallbackWords[Math.floor(Math.random() * fallbackWords.length)];
-    }
-  };
+  const API_KEY = import.meta.env.VITE_RAPIDAPI_KEY || 'YOUR_API_KEY';
 
-  const findValidAnagrams = async (word) => {
-    try {
-      // Get all possible words that can be made from the letters
-      const letters = word.split('').sort().join('');
-      const response = await fetch(`https://api.datamuse.com/words?sp=[${word}]&max=1000`);
-      const words = await response.json();
-      
-      const validAnagrams = new Set();
-      
-      for (const result of words) {
-        const candidate = result.word.toLowerCase();
-        if (
-          candidate !== word &&
-          candidate.length >= 3 &&
-          isValidWord(candidate, word)
-        ) {
-          // Verify word exists in dictionary
-          const dictResponse = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${candidate}`);
-          if (dictResponse.ok) {
-            validAnagrams.add(candidate);
-          }
-        }
+  const generateWordsList = async () => {
+    // Check cache first
+    const cached = localStorage.getItem('anagramWords');
+    if (cached) {
+      const parsedCache = JSON.parse(cached);
+      if (parsedCache.timestamp > Date.now() - 3600000) { // 1 hour cache
+        return parsedCache.data;
       }
-      
-      return validAnagrams;
-    } catch (error) {
-      console.error('Error finding anagrams:', error);
-      return new Set();
     }
-  };
+  
+    const options = {
+      method: 'GET',
+      headers: {
+        'X-RapidAPI-Key': API_KEY,
+        'X-RapidAPI-Host': 'wordsapiv1.p.rapidapi.com'
+      }
+    };
+  
+    try {
+      let word;
+      let attempts = 0;
+      const maxAttempts = 5;
+  
+      while (attempts < maxAttempts) {
+        const response = await fetch('https://wordsapiv1.p.rapidapi.com/words/?random=true&letters=6', options);
+        const data = await response.json();
+        word = data.word;
 
-  const isValidWord = (candidate, baseWord) => {
-    const baseLetters = {};
-    for (const letter of baseWord) {
-      baseLetters[letter] = (baseLetters[letter] || 0) + 1;
+        if (/^[a-zA-Z]+$/.test(word)) {
+          break;
+        }
+        attempts++;
+      }
+
+      if (attempts >= maxAttempts) {
+        return {
+          base: 'garden',
+          anagrams: ['danger', 'ranged', 'gander']
+        };
+      }
+  
+      const anagrams = await findAnagrams(word);
+      const wordData = {
+        base: word,
+        anagrams: anagrams.filter(w => w !== word && w.length >= 3)
+      };
+
+      if (wordData.anagrams.length === 0) {
+        return {
+          base: 'garden',
+          anagrams: ['danger', 'ranged', 'gander']
+        };
+      }
+
+      localStorage.setItem('anagramWords', JSON.stringify({
+        timestamp: Date.now(),
+        data: wordData
+      }));
+  
+      return wordData;
+    } catch (error) {
+      console.error('Error generating words:', error);
+      return {
+        base: 'garden',
+        anagrams: ['danger', 'ranged', 'gander']
+      };
     }
-    
-    for (const letter of candidate) {
-      if (!baseLetters[letter]) return false;
-      baseLetters[letter]--;
-    }
-    
-    return true;
   };
+  
+  const findAnagrams = async (word) => {
+    if (!/^[a-zA-Z]+$/.test(word)) {
+      return [];
+    }
+  
+    const options = {
+      method: 'GET',
+      headers: {
+        'X-RapidAPI-Key': API_KEY,
+        'X-RapidAPI-Host': 'wordsapiv1.p.rapidapi.com'
+      }
+    };
+  
+    try {
+      const response = await fetch(`https://wordsapiv1.p.rapidapi.com/words/${encodeURIComponent(word)}/anagrams`, options);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      return data.anagrams || [];
+    } catch (error) {
+      console.error('Error fetching anagrams:', error);
+      return [];
+    }
+  };  
+
+  useEffect(() => {
+    const loadWords = async () => {
+      setIsLoading(true);
+      try {
+        const wordData = await generateWordsList();
+        setWordsList([wordData]);
+      } catch (error) {
+        console.error('Error loading words:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadWords();
+  }, []);
 
   const startGame = async () => {
     setIsLoading(true);
     try {
-      const word = await fetchBaseWord();
-      const anagrams = await findValidAnagrams(word);
-      
-      setBaseWord(word);
-      setValidWords(anagrams);
+      const wordData = await generateWordsList();
+      setBaseWord(wordData.base);
+      setValidWords(new Set(wordData.anagrams));
       setFoundWords(new Set());
       setScore(0);
       setTimeLeft(180);
