@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { wordsList } from '../../../constants/gameData';
+import { wordsList as initialWordsList } from '../../../constants/gameData';
 import { styles } from './WordScramble.styles';
 
 const WordScramble = () => {
@@ -9,8 +9,28 @@ const WordScramble = () => {
   const [userGuess, setUserGuess] = useState('');
   const [message, setMessage] = useState('');
   const [score, setScore] = useState(0);
+  const [availableWords, setAvailableWords] = useState([...initialWordsList]);
 
-  // Function to scramble a word
+  const fetchNewWords = async () => {
+    try {
+      const response = await fetch('/api/words', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch words');
+      }
+
+      const newWords = await response.json();
+      setAvailableWords(prevWords => [...prevWords, ...newWords]);
+    } catch (error) {
+      console.error('Error fetching new words:', error);
+    }
+  };
+
   const scrambleWord = (word) => {
     const wordArray = word.split('');
     for (let i = wordArray.length - 1; i > 0; i--) {
@@ -20,10 +40,21 @@ const WordScramble = () => {
     return wordArray.join('');
   };
 
-  // Function to get a new word
   const getNewWord = () => {
-    const randomIndex = Math.floor(Math.random() * wordsList.length);
-    const wordObj = wordsList[randomIndex];
+    if (availableWords.length <= 3) {
+      fetchNewWords();
+    }
+
+    if (availableWords.length === 0) {
+      setMessage('Loading new words...');
+      return;
+    }
+
+    const randomIndex = Math.floor(Math.random() * availableWords.length);
+    const wordObj = availableWords[randomIndex];
+    const updatedWords = availableWords.filter((_, index) => index !== randomIndex);
+    
+    setAvailableWords(updatedWords);
     setCurrentWord(wordObj.word);
     setHint(wordObj.hint);
     setScrambledWord(scrambleWord(wordObj.word));
@@ -31,12 +62,10 @@ const WordScramble = () => {
     setMessage('');
   };
 
-  // Initialize game
   useEffect(() => {
     getNewWord();
   }, []);
 
-  // Handle user guess
   const handleSubmit = (e) => {
     e.preventDefault();
     if (userGuess.toUpperCase() === currentWord) {
@@ -88,4 +117,3 @@ const WordScramble = () => {
 };
 
 export default WordScramble;
-

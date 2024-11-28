@@ -5,6 +5,7 @@ import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import dotenv from 'dotenv';
+
 dotenv.config();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -14,6 +15,7 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'dist')));
+
 async function generateConnectionGroups() {
   const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
   const prompt = `Generate exactly 16 connection groups as a JSON array. Format:
@@ -34,11 +36,11 @@ Rules:
     const result = await model.generateContent(prompt);
     const response = await result.response;
     let text = response.text().trim();
-    // Remove any markdown formatting or extra text
+
     if (text.includes('[')) {
       text = text.substring(text.indexOf('['), text.lastIndexOf(']') + 1);
     }
-    // Attempt to parse JSON
+
     let parsed;
     try {
       parsed = JSON.parse(text);
@@ -47,13 +49,12 @@ Rules:
       console.error('Received text:', text);
       throw new Error('Invalid JSON response');
     }
-    // Validate the structure
+
     if (!Array.isArray(parsed)) {
       throw new Error('Response is not an array');
     }
     const validColors = ['#FDB347', '#B7A5DE', '#85C0F9', '#F9A58B'];
-    
-    // Validate and clean each group
+
     const validGroups = parsed.filter(group => {
       try {
         return (
@@ -77,24 +78,21 @@ Rules:
     throw error;
   }
 }
-// Cache for storing generated groups
+
 let connectionCache = [];
 app.get('/api/connections', async (req, res) => {
   try {
-    // Generate new groups if cache is empty
     if (connectionCache.length < 4) {
       try {
         const newConnections = await generateConnectionGroups();
         connectionCache = [...connectionCache, ...newConnections];
       } catch (error) {
         console.error('Cache replenishment error:', error);
-        // If we have at least 4 groups in cache, continue; otherwise, throw
         if (connectionCache.length < 4) {
           throw error;
         }
       }
     }
-    // Send 4 groups
     const groupsToSend = connectionCache.splice(0, 4);
     res.json(groupsToSend);
   } catch (error) {
@@ -105,9 +103,54 @@ app.get('/api/connections', async (req, res) => {
     });
   }
 });
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+
+
+app.get('/api/words', async (req, res) => {
+  const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
+  
+  const prompt = `Generate 10 words and their hints as a JSON array. Format:
+[
+  {
+    "word": "WORD",
+    "hint": "Brief description or clue"
+  }
+]
+Rules:
+1. Words should be programming or technology related
+2. Words must be in UPPERCASE
+3. Hints should be clear and concise
+4. No duplicate words
+5. Return ONLY valid JSON`;
+
+  try {
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    let text = response.text().trim();
+
+    if (text.includes('[')) {
+      text = text.substring(text.indexOf('['), text.lastIndexOf(']') + 1);
+    }
+
+    const words = JSON.parse(text);
+
+    const validWords = words.filter(item => 
+      item.word && 
+      item.hint && 
+      typeof item.word === 'string' && 
+      typeof item.hint === 'string'
+    );
+
+    res.json(validWords);
+  } catch (error) {
+    console.error('Error generating words:', error);
+    res.status(500).json({ 
+      error: 'Failed to generate words',
+      details: error.message 
+    });
+  }
 });
+
+
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
