@@ -7,6 +7,7 @@ import MemoryGame from '../games/MemoryGame/MemoryGame';
 import WordScramble from '../games/WordScramble/WordScramble';
 import SpellingBee from '../games/SpellingBee/SpellingBee';
 import WordChain from '../games/WordChain/WordChain';
+import Anagrams from '../games/Anagrams/Anagrams';
 
 const GameHub = () => {
   const [selectedGame, setSelectedGame] = useState(null);
@@ -31,6 +32,8 @@ const GameHub = () => {
         return <WordScramble />;
       case 'wordchain':
         return <WordChain />;
+      case 'anagrams':
+        return <Anagrams />;
       default:
         return null;
     }

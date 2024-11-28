@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import './CodeWord.css';
+import { styles } from './CodeWord.styles';
 
 const CodeWord = () => {
   const [gameState, setGameState] = useState({

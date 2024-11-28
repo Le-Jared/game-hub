@@ -27,7 +27,7 @@ export const games = [
     {
       id: 'anagrams',
       title: 'Anagrams',
-      description: 'Work In Progress',
+      description: 'Make words using provided letters',
     },
     {
       id: 'worddefinition',
