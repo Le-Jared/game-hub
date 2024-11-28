@@ -1,10 +1,78 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 import { styles } from './Connections.styles';
 import { 
   connectionGroups as initialConnectionGroups,
   GAME_MODES,
   INSTRUCTIONS 
 } from '../../../constants/gameData';
+import React, { useState, useEffect, useRef } from 'react';
+
+const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
+
+const generateConnectionGroups = async () => {
+  const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
+  const prompt = `Generate exactly 16 connection groups as a JSON array. Format:
+[
+  {
+    "category": "CATEGORY NAME",
+    "words": ["WORD1", "WORD2", "WORD3", "WORD4"],
+    "color": "#COLOR"
+  }
+]
+Rules:
+1. Use ONLY these colors: #FDB347, #B7A5DE, #85C0F9, #F9A58B
+2. ALL text must be in UPPERCASE
+3. Each group MUST have exactly 4 words
+4. No duplicate words or categories
+5. Return ONLY valid JSON, no explanations or additional text`;
+
+  try {
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    let text = response.text().trim();
+
+    if (text.includes('[')) {
+      text = text.substring(text.indexOf('['), text.lastIndexOf(']') + 1);
+    }
+
+    let parsed;
+    try {
+      parsed = JSON.parse(text);
+    } catch (parseError) {
+      console.error('JSON Parse Error:', parseError);
+      console.error('Received text:', text);
+      throw new Error('Invalid JSON response');
+    }
+
+    if (!Array.isArray(parsed)) {
+      throw new Error('Response is not an array');
+    }
+    const validColors = ['#FDB347', '#B7A5DE', '#85C0F9', '#F9A58B'];
+
+    const validGroups = parsed.filter(group => {
+      try {
+        return (
+          group.category &&
+          typeof group.category === 'string' &&
+          Array.isArray(group.words) &&
+          group.words.length === 4 &&
+          group.words.every(word => typeof word === 'string') &&
+          validColors.includes(group.color)
+        );
+      } catch (e) {
+        return false;
+      }
+    });
+
+    if (validGroups.length < 4) {
+      throw new Error('Not enough valid groups generated');
+    }
+    return validGroups;
+  } catch (error) {
+    console.error('Generation Error:', error);
+    throw error;
+  }
+};
 
 const Connections = () => {
   const [gameState, setGameState] = useState('mode');
@@ -27,11 +95,10 @@ const Connections = () => {
 
   const fetchNewGroups = async () => {
     try {
-      const response = await fetch('/api/connections');
-      const newGroups = await response.json();
+      const newGroups = await generateConnectionGroups();
       return newGroups;
     } catch (error) {
-      console.error('Failed to fetch new connections:', error);
+      console.error('Failed to generate connections:', error);
       return null;
     }
   };

@@ -2,7 +2,7 @@ export const games = [
     {
       id: 'connections',
       title: 'Connections',
-      description: 'Find groups of related words (Local Only)',
+      description: 'Find groups of related words',
     },
     {
       id: 'memory',
