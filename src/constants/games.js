@@ -24,5 +24,20 @@ export const games = [
       title: 'Word Chain',
       description: 'Make a chain of words',
     },
+    {
+      id: 'anagrams',
+      title: 'Anagrams',
+      description: 'Work In Progress',
+    },
+    {
+      id: 'worddefinition',
+      title: 'Word Definition',
+      description: 'Work In Progress',
+    },
+    {
+      id: 'codeword',
+      title: 'CodeWord',
+      description: 'Work In Progress',
+    },
   ];
   

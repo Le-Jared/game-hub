@@ -124,7 +124,6 @@ const Connections = () => {
       setGameState('playing');
       
       if (mode === GAME_MODES.COMPETITIVE) {
-        // Only start timer after everything else is set up
         setTimeout(() => {
           startTimer();
         }, 0);
@@ -139,7 +138,6 @@ const Connections = () => {
   };
   
   const handleSkip = async () => {
-    // Clear existing timer
     if (timerRef.current) {
       clearInterval(timerRef.current);
       timerRef.current = null;
@@ -150,12 +148,9 @@ const Connections = () => {
     if (gameMode === GAME_MODES.CASUAL) {
       await initializeGame(GAME_MODES.CASUAL);
     } else if (gameMode === GAME_MODES.COMPETITIVE) {
-      // Update score and time before initializing new game
       setScore(prev => prev - 50);
       setTimeLeft(prev => Math.max(0, prev - 30));
       showTemporaryMessage('Skipped! -50 points and -30 seconds');
-      
-      // Small delay to ensure state updates are processed
       await new Promise(resolve => setTimeout(resolve, 0));
       await initializeGame(GAME_MODES.COMPETITIVE);
     }
