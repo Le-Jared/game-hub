@@ -2,7 +2,7 @@ export const games = [
     {
       id: 'connections',
       title: 'Connections',
-      description: 'Find groups of related words',
+      description: 'Find groups of related words (Local Only)',
     },
     {
       id: 'memory',
@@ -12,7 +12,7 @@ export const games = [
     {
       id: 'wordscramble',
       title: 'Word Scramble',
-      description: 'Unscramble the words',
+      description: 'Unscramble the words (Local Only)',
     },
     {
       id: 'spellingbee',
