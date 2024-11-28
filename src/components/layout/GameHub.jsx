@@ -5,6 +5,7 @@ import { games } from '../../constants/games';
 import Connections from '../games/Connections/Connections';
 import MemoryGame from '../games/MemoryGame/MemoryGame';
 import WordScramble from '../games/WordScramble/WordScramble';
+import SpellingBee from '../games/SpellingBee/SpellingBee';
 
 const GameHub = () => {
   const [selectedGame, setSelectedGame] = useState(null);
@@ -21,8 +22,8 @@ const GameHub = () => {
     switch (selectedGame) {
       case 'connections':
         return <Connections />;
-      case 'tictactoe':
-        return <TicTacToe />;
+      case 'spellingbee':
+        return <SpellingBee />;
       case 'memory':
         return <MemoryGame />;
       case 'wordscramble':
