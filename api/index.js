@@ -1,35 +1,9 @@
-import express from 'express';
-import path from 'path';
-import cors from 'cors';
-import { fileURLToPath } from 'url';
-import { dirname } from 'path';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import dotenv from 'dotenv';
 
 dotenv.config();
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
-const app = express();
-const PORT = process.env.PORT || 5000;
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-
-// CORS configuration
-app.use(cors({
-  origin: process.env.NODE_ENV === 'production' 
-    ? ['https://your-domain.vercel.app', 'https://game-hub-coral.vercel.app'] 
-    : 'http://localhost:5173',
-  methods: ['GET', 'POST'],
-  credentials: true
-}));
-
-app.use(express.json());
-
-// Serve static files in production
-if (process.env.NODE_ENV === 'production') {
-  app.use(express.static(path.join(__dirname, 'dist')));
-}
 
 async function generateConnectionGroups() {
   const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
@@ -103,45 +77,49 @@ Rules:
 // Cache for storing generated groups
 let connectionCache = [];
 
-app.get('/api/connections', async (req, res) => {
-  try {
-    if (connectionCache.length < 4) {
-      try {
-        const newConnections = await generateConnectionGroups();
-        connectionCache = [...connectionCache, ...newConnections];
-      } catch (error) {
-        console.error('Cache replenishment error:', error);
-        if (connectionCache.length < 4) {
-          throw error;
+// Vercel serverless function handler
+export default async function handler(req, res) {
+  // Set CORS headers
+  res.setHeader('Access-Control-Allow-Credentials', true);
+  res.setHeader('Access-Control-Allow-Origin', process.env.NODE_ENV === 'production'
+    ? 'https://game-hub-coral.vercel.app'
+    : 'http://localhost:5173');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+  // Handle OPTIONS request for CORS preflight
+  if (req.method === 'OPTIONS') {
+    res.status(200).end();
+    return;
+  }
+
+  // Handle GET request
+  if (req.method === 'GET') {
+    try {
+      if (connectionCache.length < 4) {
+        try {
+          const newConnections = await generateConnectionGroups();
+          connectionCache = [...connectionCache, ...newConnections];
+        } catch (error) {
+          console.error('Cache replenishment error:', error);
+          if (connectionCache.length < 4) {
+            throw error;
+          }
         }
       }
+
+      const groupsToSend = connectionCache.splice(0, 4);
+      res.status(200).json(groupsToSend);
+    } catch (error) {
+      console.error('API Error:', error);
+      res.status(500).json({
+        error: 'Failed to generate connections',
+        details: error.message
+      });
     }
-
-    const groupsToSend = connectionCache.splice(0, 4);
-    res.json(groupsToSend);
-
-  } catch (error) {
-    console.error('API Error:', error);
-    res.status(500).json({
-      error: 'Failed to generate connections',
-      details: error.message
-    });
-  }
-});
-
-// Catch-all route for SPA
-app.get('*', (req, res) => {
-  if (process.env.NODE_ENV === 'production') {
-    res.sendFile(path.join(__dirname, 'dist', 'index.html'));
   } else {
-    res.status(404).send('Not found');
+    res.setHeader('Allow', ['GET']);
+    res.status(405).end(`Method ${req.method} Not Allowed`);
   }
-});
-
-if (process.env.NODE_ENV !== 'production') {
-  app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-  });
 }
 
-export default app;

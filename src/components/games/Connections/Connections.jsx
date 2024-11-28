@@ -26,15 +26,20 @@ const Connections = () => {
   const timerRef = React.useRef();
 
   const fetchNewGroups = async () => {
+    const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+  
     try {
-      const response = await fetch('/api/connections');
+      const response = await fetch(`${baseUrl}/api/connections`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
       const newGroups = await response.json();
       return newGroups;
     } catch (error) {
       console.error('Failed to fetch new connections:', error);
       return null;
     }
-  };
+  };  
 
   useEffect(() => {
     const preloadNextGroups = async () => {
