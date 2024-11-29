@@ -41,81 +41,12 @@ const AnagramGame = () => {
   );
 
   const API_KEY = import.meta.env.VITE_RAPIDAPI_KEY || 'YOUR_API_KEY';
-
-  const generateWordsList = async () => {
-    // Check cache first
-    const cached = localStorage.getItem('anagramWords');
-    if (cached) {
-      const parsedCache = JSON.parse(cached);
-      if (parsedCache.timestamp > Date.now() - 3600000) { // 1 hour cache
-        return parsedCache.data;
-      }
-    }
-  
-    const options = {
-      method: 'GET',
-      headers: {
-        'X-RapidAPI-Key': API_KEY,
-        'X-RapidAPI-Host': 'wordsapiv1.p.rapidapi.com'
-      }
-    };
-  
-    try {
-      let word;
-      let attempts = 0;
-      const maxAttempts = 5;
-  
-      while (attempts < maxAttempts) {
-        const response = await fetch('https://wordsapiv1.p.rapidapi.com/words/?random=true&letters=6', options);
-        const data = await response.json();
-        word = data.word;
-
-        if (/^[a-zA-Z]+$/.test(word)) {
-          break;
-        }
-        attempts++;
-      }
-
-      if (attempts >= maxAttempts) {
-        return {
-          base: 'garden',
-          anagrams: ['danger', 'ranged', 'gander']
-        };
-      }
-  
-      const anagrams = await findAnagrams(word);
-      const wordData = {
-        base: word,
-        anagrams: anagrams.filter(w => w !== word && w.length >= 3)
-      };
-
-      if (wordData.anagrams.length === 0) {
-        return {
-          base: 'garden',
-          anagrams: ['danger', 'ranged', 'gander']
-        };
-      }
-
-      localStorage.setItem('anagramWords', JSON.stringify({
-        timestamp: Date.now(),
-        data: wordData
-      }));
-  
-      return wordData;
-    } catch (error) {
-      console.error('Error generating words:', error);
-      return {
-        base: 'garden',
-        anagrams: ['danger', 'ranged', 'gander']
-      };
-    }
-  };
   
   const findAnagrams = async (word) => {
     if (!/^[a-zA-Z]+$/.test(word)) {
       return [];
     }
-  
+
     const options = {
       method: 'GET',
       headers: {
@@ -123,10 +54,18 @@ const AnagramGame = () => {
         'X-RapidAPI-Host': 'wordsapiv1.p.rapidapi.com'
       }
     };
-  
+
     try {
+      const checkWordResponse = await fetch(`https://wordsapiv1.p.rapidapi.com/words/${encodeURIComponent(word)}`, options);
+      if (!checkWordResponse.ok) {
+        return []; 
+      }
+
       const response = await fetch(`https://wordsapiv1.p.rapidapi.com/words/${encodeURIComponent(word)}/anagrams`, options);
       if (!response.ok) {
+        if (response.status === 404) {
+          return [];
+        }
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       const data = await response.json();
@@ -135,7 +74,77 @@ const AnagramGame = () => {
       console.error('Error fetching anagrams:', error);
       return [];
     }
-  };  
+  };
+
+  const generateWordsList = async () => {
+    const cached = localStorage.getItem('anagramWords');
+    if (cached) {
+      const parsedCache = JSON.parse(cached);
+      if (parsedCache.timestamp > Date.now() - 3600000) {
+        return parsedCache.data;
+      }
+    }
+
+    const options = {
+      method: 'GET',
+      headers: {
+        'X-RapidAPI-Key': API_KEY,
+        'X-RapidAPI-Host': 'wordsapiv1.p.rapidapi.com'
+      }
+    };
+
+    const fallbackWords = [
+      { base: 'garden', anagrams: ['danger', 'ranged', 'gander'] },
+      { base: 'silent', anagrams: ['listen', 'inlets', 'tinsel'] },
+      { base: 'master', anagrams: ['stream', 'tamers'] },
+      { base: 'plates', anagrams: ['staple', 'pleats', 'petals'] }
+    ];
+
+    try {
+      let word;
+      let anagrams;
+      let attempts = 0;
+      const maxAttempts = 5;
+
+      while (attempts < maxAttempts) {
+        const response = await fetch('https://wordsapiv1.p.rapidapi.com/words/?random=true&letters=6', options);
+        if (!response.ok) {
+          throw new Error('Failed to fetch random word');
+        }
+        
+        const data = await response.json();
+        word = data.word;
+
+        if (/^[a-zA-Z]+$/.test(word)) {
+          anagrams = await findAnagrams(word);
+          if (anagrams.length >= 2) { 
+            break;
+          }
+        }
+        attempts++;
+      }
+
+      if (attempts >= maxAttempts || !anagrams || anagrams.length < 2) {
+        return fallbackWords[Math.floor(Math.random() * fallbackWords.length)];
+      }
+
+      const wordData = {
+        base: word,
+        anagrams: anagrams.filter(w => w !== word && w.length >= 3)
+      };
+
+      localStorage.setItem('anagramWords', JSON.stringify({
+        timestamp: Date.now(),
+        data: wordData
+      }));
+
+      return wordData;
+    } catch (error) {
+      console.error('Error generating words:', error);
+      return fallbackWords[Math.floor(Math.random() * fallbackWords.length)];
+    }
+  };
+
 
   useEffect(() => {
     const loadWords = async () => {
