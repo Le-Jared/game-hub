@@ -1,0 +1,203 @@
+.codewordContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1rem;
+  max-width: 100%;
+  margin: 0 auto;
+  min-height: 100vh;
+  background-color: #ffffff;
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  font-size: 1.5rem;
+}
+
+.instructions {
+  max-width: 90%;
+  margin: 1rem auto;
+  padding: 1.5rem;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.instructions h2 {
+  margin-bottom: 1rem;
+  color: #2c3e50;
+}
+
+.instructions ul {
+  list-style: none;
+  padding: 0;
+}
+
+.instructions li {
+  margin-bottom: 0.8rem;
+  line-height: 1.4;
+}
+
+.examples {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.8rem;
+  align-items: center;
+  margin-top: 1rem;
+}
+
+.examples span {
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.startButton {
+  display: block;
+  width: 100%;
+  max-width: 200px;
+  margin: 1.5rem auto 0;
+  padding: 0.8rem;
+  background-color: #2c3e50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.startButton:hover {
+  background-color: #34495e;
+}
+
+.error {
+  color: #ff0033;
+  margin: 10px 0;
+  padding: 10px;
+  border-radius: 4px;
+  background-color: #ffe6e6;
+  width: 100%;
+  max-width: 500px;
+  text-align: center;
+}
+
+.gameBoard {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin: 20px 0;
+  width: 100%;
+  max-width: 350px;
+}
+
+.guessRow {
+  display: flex;
+  gap: 5px;
+  justify-content: center;
+}
+
+.guessCell {
+  width: 3.5rem;
+  height: 3.5rem;
+  border: 2px solid #ccc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+}
+
+.correct {
+  background-color: #6aaa64;
+  color: white;
+  border-color: #6aaa64;
+}
+
+.present {
+  background-color: #c9b458;
+  color: white;
+  border-color: #c9b458;
+}
+
+.absent {
+  background-color: #787c7e;
+  color: white;
+  border-color: #787c7e;
+}
+
+.keyboard {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 20px;
+  width: 100%;
+  max-width: 500px;
+}
+
+.keyboardRow {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+}
+
+.key {
+  padding: 1rem 0.8rem;
+  min-width: 2rem;
+  border: none;
+  border-radius: 4px;
+  background-color: #d3d6da;
+  font-weight: bold;
+  cursor: pointer;
+  text-transform: uppercase;
+  transition: all 0.2s ease;
+  touch-action: manipulation;
+}
+
+.key:hover {
+  opacity: 0.8;
+}
+
+.message {
+  margin: 20px 0;
+  padding: 10px;
+  border-radius: 4px;
+  background-color: #f0f0f0;
+  text-align: center;
+  width: 100%;
+  max-width: 300px;
+}
+
+@media (max-width: 480px) {
+  .codewordContainer {
+    padding: 0.5rem;
+  }
+
+  .instructions {
+    padding: 1rem;
+  }
+
+  .guessCell {
+    width: 2.8rem;
+    height: 2.8rem;
+    font-size: 1.2rem;
+  }
+
+  .key {
+    padding: 0.8rem 0.5rem;
+    min-width: 1.8rem;
+    font-size: 0.9rem;
+  }
+
+  .examples {
+    gap: 0.5rem;
+  }
+
+  .examples span {
+    font-size: 0.8rem;
+  }
+}

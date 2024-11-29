@@ -8,6 +8,7 @@ import WordScramble from '../games/WordScramble/WordScramble';
 import SpellingBee from '../games/SpellingBee/SpellingBee';
 import WordChain from '../games/WordChain/WordChain';
 import Anagrams from '../games/Anagrams/Anagrams';
+import CodeWord from '../games/CodeWord/CodeWord';
 
 const GameHub = () => {
   const [selectedGame, setSelectedGame] = useState(null);
@@ -34,6 +35,8 @@ const GameHub = () => {
         return <WordChain />;
       case 'anagrams':
         return <Anagrams />;
+      case 'codeword':
+        return <CodeWord />;
       default:
         return null;
     }

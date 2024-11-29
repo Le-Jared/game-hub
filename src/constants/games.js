@@ -30,13 +30,13 @@ export const games = [
       description: 'Make words using provided letters',
     },
     {
-      id: 'worddefinition',
-      title: 'Word Definition',
-      description: 'Work In Progress',
-    },
-    {
       id: 'codeword',
       title: 'CodeWord',
+      description: 'Guess the word',
+    },
+    {
+      id: 'worddefinition',
+      title: 'Word Definition',
       description: 'Work In Progress',
     },
   ];
