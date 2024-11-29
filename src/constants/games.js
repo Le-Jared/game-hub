@@ -37,7 +37,7 @@ export const games = [
     {
       id: 'worddefinition',
       title: 'Word Definition',
-      description: 'Work In Progress',
+      description: 'Find the definition of the word',
     },
   ];
   
