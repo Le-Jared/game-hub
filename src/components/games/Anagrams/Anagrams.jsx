@@ -12,6 +12,33 @@ const AnagramGame = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [gameState, setGameState] = useState('start');
   const [wordsList, setWordsList] = useState([]);
+  const [showInstructions, setShowInstructions] = useState(false);
+
+  const Instructions = () => (
+    <div style={styles.instructionsModal}>
+      <div style={styles.instructionsContent}>
+        <h2>How to Play</h2>
+        <ol style={styles.instructionsList}>
+          <li>You'll be given a 6-letter word as your base word</li>
+          <li>Find as many words as you can using those letters</li>
+          <li>Rules:
+            <ul>
+              <li>Words must be at least 3 letters long</li>
+              <li>You can use each letter only once per word</li>
+              <li>Score is based on word length (10 points per letter)</li>
+            </ul>
+          </li>
+          <li>You have 3 minutes to find as many words as possible</li>
+        </ol>
+        <button 
+          style={styles.button}
+          onClick={() => setShowInstructions(false)}
+        >
+          Got it!
+        </button>
+      </div>
+    </div>
+  );
 
   const API_KEY = import.meta.env.VITE_RAPIDAPI_KEY || 'YOUR_API_KEY';
 
@@ -203,13 +230,24 @@ const AnagramGame = () => {
       <h1>Anagram Game</h1>
       
       {gameState === 'start' && (
-        <div>
-          <h2>Find as many words as you can!</h2>
-          <button style={styles.button} onClick={startGame}>
+        <div style={styles.startScreen}>
+          <h2>Welcome to Anagram Game!</h2>
+          <button 
+            style={styles.button} 
+            onClick={() => setShowInstructions(true)}
+          >
+            How to Play
+          </button>
+          <button 
+            style={{...styles.button, marginLeft: '10px'}} 
+            onClick={startGame}
+          >
             Start Game
           </button>
         </div>
       )}
+
+      {showInstructions && <Instructions />}
 
       {gameState === 'playing' && (
         <>

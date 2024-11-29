@@ -1,30 +1,37 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
 import { styles } from './Connections.styles';
-import { 
-  connectionGroups as initialConnectionGroups,
-  GAME_MODES,
-  INSTRUCTIONS 
-} from '../../../constants/gameData';
+import { GAME_MODES, INSTRUCTIONS } from '../../../constants/gameData';
 import React, { useState, useEffect, useRef } from 'react';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
 const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
 
 const generateConnectionGroups = async () => {
-  const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
-  const prompt = `Generate exactly 16 connection groups as a JSON array. Format:
+  const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+  const prompt = `Generate exactly 16 challenging word connections similar to New York Times Connections puzzle difficulty. Format:
 [
   {
     "category": "CATEGORY NAME",
     "words": ["WORD1", "WORD2", "WORD3", "WORD4"],
-    "color": "#COLOR"
+    "color": "#COLOR",
+    "difficulty": 1-4
   }
 ]
 Rules:
-1. Use ONLY these colors: #FDB347, #B7A5DE, #85C0F9, #F9A58B
-2. ALL text must be in UPPERCASE
+1. Colors (matching difficulty):
+   - Level 1 (Easiest): #FDB347
+   - Level 2: #85C0F9
+   - Level 3: #B7A5DE
+   - Level 4 (Hardest): #F9A58B
+2. ALL text in UPPERCASE
 3. Each group MUST have exactly 4 words
 4. No duplicate words or categories
-5. Return ONLY valid JSON, no explanations or additional text`;
+5. Make connections challenging by:
+   - Using words with multiple meanings
+   - Including subtle thematic links
+   - Adding misdirection possibilities
+   - Creating compound word possibilities
+6. Include at least one group of each difficulty level
+7. Return ONLY valid JSON`;
 
   try {
     const result = await model.generateContent(prompt);
@@ -40,34 +47,49 @@ Rules:
       parsed = JSON.parse(text);
     } catch (parseError) {
       console.error('JSON Parse Error:', parseError);
-      console.error('Received text:', text);
       throw new Error('Invalid JSON response');
     }
 
     if (!Array.isArray(parsed)) {
       throw new Error('Response is not an array');
     }
-    const validColors = ['#FDB347', '#B7A5DE', '#85C0F9', '#F9A58B'];
 
-    const validGroups = parsed.filter(group => {
-      try {
-        return (
-          group.category &&
-          typeof group.category === 'string' &&
-          Array.isArray(group.words) &&
-          group.words.length === 4 &&
-          group.words.every(word => typeof word === 'string') &&
-          validColors.includes(group.color)
-        );
-      } catch (e) {
-        return false;
-      }
-    });
+    const difficultyColors = {
+      1: '#FDB347',
+      2: '#85C0F9',
+      3: '#B7A5DE',
+      4: '#F9A58B'
+    };
 
-    if (validGroups.length < 4) {
-      throw new Error('Not enough valid groups generated');
+    const validGroups = parsed
+      .filter(group => {
+        try {
+          return (
+            group.category &&
+            typeof group.category === 'string' &&
+            Array.isArray(group.words) &&
+            group.words.length === 4 &&
+            group.words.every(word => typeof word === 'string') &&
+            group.difficulty >= 1 &&
+            group.difficulty <= 4
+          );
+        } catch (e) {
+          return false;
+        }
+      })
+      .map(group => ({
+        ...group,
+        color: difficultyColors[group.difficulty]
+      }));
+
+    const difficulties = validGroups.map(g => g.difficulty);
+    const hasAllDifficulties = [1, 2, 3, 4].every(d => difficulties.includes(d));
+
+    if (!hasAllDifficulties || validGroups.length < 4) {
+      throw new Error('Invalid difficulty distribution');
     }
-    return validGroups;
+
+    return validGroups.sort((a, b) => a.difficulty - b.difficulty);
   } catch (error) {
     console.error('Generation Error:', error);
     throw error;
@@ -83,15 +105,14 @@ const Connections = () => {
   const [solvedGroups, setSolvedGroups] = useState([]);
   const [score, setScore] = useState(0);
   const [timeLeft, setTimeLeft] = useState(300);
-  const [availableGroups, setAvailableGroups] = useState(initialConnectionGroups);
   const [isLoading, setIsLoading] = useState(false);
   const [backupGroups, setBackupGroups] = useState(null);
   const [isPreloading, setIsPreloading] = useState(false);
   const [timerPaused, setTimerPaused] = useState(false);
   const [showInstructions, setShowInstructions] = useState(true);
 
-  const messageTimeout = React.useRef();
-  const timerRef = React.useRef();
+  const messageTimeout = useRef();
+  const timerRef = useRef();
 
   const fetchNewGroups = async () => {
     try {
@@ -150,7 +171,6 @@ const Connections = () => {
   };
 
   const initializeGame = async (mode) => {
-    // Clear existing timer if any
     if (timerRef.current) {
       clearInterval(timerRef.current);
       timerRef.current = null;
@@ -167,24 +187,17 @@ const Connections = () => {
         selectedGroups = backupGroups.slice(0, 4);
         setBackupGroups(null);
       } else {
-        selectedGroups = availableGroups.slice(0, 4);
-        
-        if (selectedGroups.length < 4) {
-          const newGroups = await fetchNewGroups();
-          selectedGroups = newGroups.slice(0, 4);
-        }
+        const newGroups = await fetchNewGroups();
+        selectedGroups = newGroups.slice(0, 4);
       }
   
       const allWords = selectedGroups.flatMap(group => 
         group.words.map(word => ({
           word,
           category: group.category,
-          color: group.color
+          color: group.color,
+          difficulty: group.difficulty
         }))
-      );
-  
-      setAvailableGroups(prevGroups => 
-        prevGroups.filter(group => !selectedGroups.includes(group))
       );
   
       setDisplayedWords(shuffle([...allWords]));
@@ -203,7 +216,7 @@ const Connections = () => {
       setTimerPaused(false);
     }
   };
-  
+
   const handleSkip = async () => {
     if (timerRef.current) {
       clearInterval(timerRef.current);
@@ -273,16 +286,18 @@ const Connections = () => {
     const isCorrect = selected.every(word => word.category === category);
   
     if (isCorrect) {
+      const difficultyMultiplier = selected[0].difficulty;
       const points = gameMode === GAME_MODES.COMPETITIVE ? 
-        Math.ceil(timeLeft / 8) + 20 : 
-        1;
+        (Math.ceil(timeLeft / 8) + 20) * difficultyMultiplier : 
+        difficultyMultiplier;
       
       setScore(prev => prev + points);
       showTemporaryMessage(`Correct! +${points} points`);
       setSolvedGroups(prev => [...prev, {
         category,
         words: selected.map(s => s.word),
-        color: selected[0].color
+        color: selected[0].color,
+        difficulty: selected[0].difficulty
       }]);
   
       setDisplayedWords(prev => 
@@ -299,15 +314,15 @@ const Connections = () => {
       }
     } else {
       if (gameMode === GAME_MODES.COMPETITIVE) {
-        setScore(prev => prev - 10);
-        showTemporaryMessage('Incorrect! -10 points');
+        const penalty = Math.min(...selected.map(s => s.difficulty)) * 10;
+        setScore(prev => prev - penalty);
+        showTemporaryMessage(`Incorrect! -${penalty} points`);
       } else {
         showTemporaryMessage('Incorrect! Try again');
       }
     }
     setSelectedWords([]);
   };
-  
 
   return (
     <div style={styles.container}>
