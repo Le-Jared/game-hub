@@ -49,5 +49,19 @@ export const styles = {
     },
     error: {
       color: '#c0392b',
-    }
+    },
+    hints: {
+      marginTop: '1rem',
+      marginBottom: '1rem',
+      padding: '1rem',
+      backgroundColor: '#f8f9fa',
+      borderRadius: '8px',
+      maxWidth: '400px',
+      margin: '1rem auto'
+    },
+    hintItem: {
+      margin: '0.5rem 0',
+      color: '#495057',
+      fontStyle: 'italic'
+    },
   };
