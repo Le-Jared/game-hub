@@ -7,31 +7,57 @@ const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
 
 const generateConnectionGroups = async () => {
   const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
-  const prompt = `Generate exactly 16 challenging word connections similar to New York Times Connections puzzle difficulty. Format:
-[
-  {
-    "category": "CATEGORY NAME",
-    "words": ["WORD1", "WORD2", "WORD3", "WORD4"],
-    "color": "#COLOR",
-    "difficulty": 1-4
-  }
-]
-Rules:
-1. Colors (matching difficulty):
-   - Level 1 (Easiest): #FDB347
-   - Level 2: #85C0F9
-   - Level 3: #B7A5DE
-   - Level 4 (Hardest): #F9A58B
-2. ALL text in UPPERCASE
-3. Each group MUST have exactly 4 words
-4. No duplicate words or categories
-5. Make connections challenging by:
-   - Using words with multiple meanings
-   - Including subtle thematic links
-   - Adding misdirection possibilities
-   - Creating compound word possibilities
-6. Include at least one group of each difficulty level
-7. Return ONLY valid JSON`;
+  const prompt = `Generate exactly 16 extremely challenging word connections similar to New York Times Connections puzzle difficulty. Format:
+  [
+    {
+      "category": "CATEGORY NAME",
+      "words": ["WORD1", "WORD2", "WORD3", "WORD4"],
+      "color": "#COLOR",
+      "difficulty": 1-4
+    }
+  ]
+  
+  Rules:
+  1. Colors (matching difficulty):
+     - Level 1 (Easiest): #FDB347
+     - Level 2: #85C0F9
+     - Level 3: #B7A5DE
+     - Level 4 (Hardest): #F9A58B
+  
+  2. ALL text in UPPERCASE
+  
+  3. Make connections EXTREMELY challenging by:
+     - Using words with 3+ possible meanings
+     - Creating deceptive cross-category connections
+     - Including words that could fit multiple categories
+     - Using obscure or specialized knowledge
+     - Adding compound word traps
+     - Including cultural references
+     - Using idiomatic expressions
+     - Incorporating wordplay and puns
+  
+  4. Category types to include:
+     - Hidden word patterns (e.g., each word contains "AT")
+     - Meta-categories (e.g., words that can precede another word)
+     - Scientific/technical terms with double meanings
+     - Cultural references that overlap
+     - Compound word formations
+     - Multiple meaning words
+     - Rhyming patterns
+     - Word transformations
+  
+  5. Example of increased difficulty:
+     Instead of simple "BREAKFAST FOODS"
+     Use "WORDS THAT CAN FOLLOW 'FRENCH'"
+     (TOAST, PRESS, KISS, HORN)
+  
+  6. Distribution:
+     - Level 1 (Yellow): 1 group
+     - Level 2 (Blue): 1 group
+     - Level 3 (Purple): 1 group
+     - Level 4 (Orange): 1 group
+  
+  7. Return ONLY valid JSON with exactly 4 words per group`;
 
   try {
     const result = await model.generateContent(prompt);
@@ -110,9 +136,28 @@ const Connections = () => {
   const [isPreloading, setIsPreloading] = useState(false);
   const [timerPaused, setTimerPaused] = useState(false);
   const [showInstructions, setShowInstructions] = useState(true);
+  const [revealedAnswers, setRevealedAnswers] = useState([]);
 
   const messageTimeout = useRef();
   const timerRef = useRef();
+
+  const revealAnswers = () => {
+    const remainingGroups = {};
+    displayedWords.forEach(wordObj => {
+      if (!remainingGroups[wordObj.category]) {
+        remainingGroups[wordObj.category] = {
+          category: wordObj.category,
+          words: [],
+          color: wordObj.color,
+          difficulty: wordObj.difficulty
+        };
+      }
+      remainingGroups[wordObj.category].words.push(wordObj.word);
+    });
+
+    setRevealedAnswers(Object.values(remainingGroups));
+    setTimerPaused(true);
+  };
 
   const fetchNewGroups = async () => {
     try {
@@ -226,7 +271,11 @@ const Connections = () => {
     setTimerPaused(true);
     
     if (gameMode === GAME_MODES.CASUAL) {
-      await initializeGame(GAME_MODES.CASUAL);
+      revealAnswers();
+      setTimeout(async () => {
+        setRevealedAnswers([]); 
+        await initializeGame(GAME_MODES.CASUAL);
+      }, 5000);
     } else if (gameMode === GAME_MODES.COMPETITIVE) {
       setScore(prev => prev - 50);
       setTimeLeft(prev => Math.max(0, prev - 30));
@@ -235,6 +284,7 @@ const Connections = () => {
       await initializeGame(GAME_MODES.COMPETITIVE);
     }
   };
+
 
   const shuffle = (array) => {
     let currentIndex = array.length;
@@ -389,26 +439,67 @@ const Connections = () => {
 
       {gameState === 'playing' && !isLoading && (
         <div style={styles.gameBoard}>
-          <div style={styles.wordGrid}>
-            {displayedWords.map((wordObj, index) => (
-              <button
-                key={index}
-                style={{
-                  ...styles.wordButton,
-                  backgroundColor: selectedWords.find(w => w.word === wordObj.word)
-                    ? '#a0a0a0'
-                    : '#e0e0e0',
-                  transform: selectedWords.find(w => w.word === wordObj.word)
-                    ? 'scale(0.95)'
-                    : 'scale(1)'
-                }}
-                onClick={() => handleWordClick(wordObj)}
-              >
-                {wordObj.word}
-              </button>
-            ))}
-          </div>
+          {revealedAnswers.length === 0 ? (
+            // Normal game view
+            <>
+              <div style={styles.wordGrid}>
+                {displayedWords.map((wordObj, index) => (
+                  <button
+                    key={index}
+                    style={{
+                      ...styles.wordButton,
+                      backgroundColor: selectedWords.find(w => w.word === wordObj.word)
+                        ? '#a0a0a0'
+                        : '#e0e0e0',
+                      transform: selectedWords.find(w => w.word === wordObj.word)
+                        ? 'scale(0.95)'
+                        : 'scale(1)'
+                    }}
+                    onClick={() => handleWordClick(wordObj)}
+                    disabled={revealedAnswers.length > 0}
+                  >
+                    {wordObj.word}
+                  </button>
+                ))}
+              </div>
 
+              <div style={styles.solvedGroups}>
+                {solvedGroups.map((group, index) => (
+                  <div 
+                    key={index} 
+                    style={{
+                      ...styles.solvedGroup,
+                      backgroundColor: group.color
+                    }}
+                  >
+                    {group.category}: {group.words.join(', ')}
+                  </div>
+                ))}
+              </div>
+            </>
+          ) : (
+            // Revealed answers view
+            <div style={styles.revealedAnswersContainer}>
+              <h3 style={styles.revealedTitle}>Remaining Groups:</h3>
+              {revealedAnswers.map((group, index) => (
+                <div 
+                  key={index} 
+                  style={{
+                    ...styles.solvedGroup,
+                    backgroundColor: group.color,
+                    marginBottom: '10px'
+                  }}
+                >
+                  {group.category}: {group.words.join(', ')}
+                </div>
+              ))}
+              <div style={styles.loadingNewGroups}>
+                Loading new groups in 5 seconds...
+              </div>
+            </div>
+          )}
+
+          {/* Previously solved groups are always visible */}
           <div style={styles.solvedGroups}>
             {solvedGroups.map((group, index) => (
               <div 
@@ -429,10 +520,13 @@ const Connections = () => {
               backgroundColor: gameMode === GAME_MODES.COMPETITIVE ? '#ff4444' : '#4CAF50'
             }}
             onClick={handleSkip}
+            disabled={revealedAnswers.length > 0}
           >
             {gameMode === GAME_MODES.COMPETITIVE 
               ? 'Skip (-50 points, -30 seconds)' 
-              : 'Skip to Next Groups'}
+              : revealedAnswers.length > 0 
+                ? 'Loading new groups...'
+                : 'Reveal Answers & Get New Groups'}
           </button>
         </div>
       )}

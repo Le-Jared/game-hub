@@ -230,5 +230,18 @@ export const styles = {
     borderRadius: '5px',
     zIndex: 1000,
     animation: 'fadeIn 0.3s ease-in-out'
-  }
+  },
+  revealedAnswers: {
+    marginTop: '20px',
+    padding: '15px',
+    backgroundColor: '#f5f5f5',
+    borderRadius: '8px',
+    boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+  },
+  loadingNewGroups: {
+    textAlign: 'center',
+    color: '#666',
+    marginTop: '10px',
+    fontStyle: 'italic'
+  },
 };
