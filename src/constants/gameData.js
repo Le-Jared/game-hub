@@ -1,4 +1,3 @@
-// Memory Game Data
 export const memoryCards = [
   { id: 1, emoji: '🐶', matched: false },
   { id: 2, emoji: '🐱', matched: false },
@@ -10,48 +9,6 @@ export const memoryCards = [
   { id: 8, emoji: '🐼', matched: false },
 ];
 
-export const connectionGroups = [
-  {
-    category: 'THINGS THAT HAVE SPOTS',
-    words: ['DALMATIAN', 'LEOPARD', 'LADYBUG', 'DICE'],
-    color: '#FDB347'
-  },
-  {
-    category: 'THINGS YOU CATCH',
-    words: ['BALL', 'COLD', 'FISH', 'BREATH'],
-    color: '#B7A5DE'
-  },
-  {
-    category: 'BOXING TERMS',
-    words: ['RING', 'PUNCH', 'ROUND', 'CORNER'],
-    color: '#85C0F9'
-  },
-  {
-    category: 'THINGS WITH SHELLS',
-    words: ['TURTLE', 'TACO', 'NUT', 'BULLET'],
-    color: '#F9A58B'
-  },
-  {
-    category: '___ CARD',
-    words: ['CREDIT', 'WILD', 'GREEN', 'BIRTHDAY'],
-    color: '#A0C35A'
-  },
-  {
-    category: 'BREAKFAST FOODS',
-    words: ['PANCAKE', 'CEREAL', 'WAFFLE', 'BACON'],
-    color: '#B7A5DE'
-  },
-  {
-    category: 'TYPES OF DANCES',
-    words: ['WALTZ', 'SALSA', 'TANGO', 'BALLET'],
-    color: '#85C0F9'
-  },
-  {
-    category: 'CELESTIAL OBJECTS',
-    words: ['MOON', 'COMET', 'PLANET', 'STAR'],
-    color: '#F9A58B'
-  },
-];
 
 export const GAME_MODES = {
   CASUAL: 'casual',
@@ -79,14 +36,12 @@ export const INSTRUCTIONS = {
   }
 };
 
-// Game Difficulties
 export const difficulties = {
   EASY: 'easy',
   MEDIUM: 'medium',
   HARD: 'hard',
 };
 
-// Game Status
 export const gameStatus = {
   PLAYING: 'playing',
   WON: 'won',
