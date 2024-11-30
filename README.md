@@ -1,8 +1,18 @@
-# React + Vite
+# Interactive Word Games Collection 🎮
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A collection of interactive word games designed to enhance classroom engagement and learning. Built with React and TypeScript.
 
-Currently, two official plugins are available:
+## 🎯 Games Included
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **Connections** - Group related words together
+- **Word Scramble** - Unscramble letters to form words
+- **Spelling Bee** - Create words from given letters
+- **Word Chain** - Connect words using last and first letters
+- **Anagrams** - Form new words using given letters
+- **CodeWord** - Decode encrypted messages
+- **Word Definition** - Match words with their meanings
+- **Memory Game** - Classic card-matching with words
+
+## ✨ Acknowledgments
+
+Developed to support interactive learning in classrooms.
