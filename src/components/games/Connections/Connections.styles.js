@@ -57,6 +57,7 @@ export const styles = {
     fontSize: '1rem',
     transition: 'all 0.2s ease',
     boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+    color: 'black',
     '&:hover': {
       transform: 'translateY(-2px)',
       boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
