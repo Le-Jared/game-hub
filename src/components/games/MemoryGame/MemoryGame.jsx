@@ -14,7 +14,6 @@ const MemoryGame = () => {
   const [streak, setStreak] = useState(0);
   const [bestStreak, setBestStreak] = useState(0);
 
-  // Timer
   useEffect(() => {
     let interval = null;
     if (isActive && score < memoryCards.length) {
@@ -25,14 +24,12 @@ const MemoryGame = () => {
     return () => clearInterval(interval);
   }, [isActive, score]);
 
-  // Format time
   const formatTime = (seconds) => {
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
     return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
   };
 
-  // Shuffle cards
   const shuffleCards = () => {
     const shuffledCards = [...memoryCards, ...memoryCards]
       .sort(() => Math.random() - 0.5)
@@ -48,22 +45,35 @@ const MemoryGame = () => {
     setStreak(0);
   };
 
-  // Handle choice
   const handleChoice = (card) => {
-    if (disabled) return;
+    if (
+      disabled || 
+      card.matched || 
+      card === choiceOne ||
+      (choiceOne && card.id === choiceOne.id) ||
+      (choiceTwo && card.id === choiceTwo.id)
+    ) {
+      return;
+    }
+
     choiceOne ? setChoiceTwo(card) : setChoiceOne(card);
   };
 
-  // Compare selected cards
   useEffect(() => {
     if (choiceOne && choiceTwo) {
+      if (choiceOne.id === choiceTwo.id) {
+        resetTurn();
+        return;
+      }
+
       setDisabled(true);
       setMoves(prev => prev + 1);
 
       if (choiceOne.emoji === choiceTwo.emoji) {
         setCards(prevCards => {
           return prevCards.map(card => {
-            if (card.emoji === choiceOne.emoji) {
+            if (card.emoji === choiceOne.emoji && 
+                (card.id === choiceOne.id || card.id === choiceTwo.id)) {
               return { ...card, matched: true };
             }
             return card;
@@ -80,21 +90,18 @@ const MemoryGame = () => {
         }, 1000);
       }
     }
-  }, [choiceOne, choiceTwo]);
+  }, [choiceOne, choiceTwo, streak]);
 
-  // Reset choices
   const resetTurn = () => {
     setChoiceOne(null);
     setChoiceTwo(null);
     setDisabled(false);
   };
 
-  // Start game automatically
   useEffect(() => {
     shuffleCards();
   }, []);
 
-  // Stop timer when game is complete
   useEffect(() => {
     if (score === memoryCards.length) {
       setIsActive(false);
@@ -122,7 +129,10 @@ const MemoryGame = () => {
         {cards.map(card => (
           <div 
             key={card.id} 
-            style={styles.card}
+            style={{
+              ...styles.card,
+              cursor: (disabled || card.matched || card === choiceOne) ? 'default' : 'pointer'
+            }}
             onClick={() => handleChoice(card)}
           >
             <div style={{
@@ -150,4 +160,5 @@ const MemoryGame = () => {
 };
 
 export default MemoryGame;
+
 
