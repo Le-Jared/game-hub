@@ -462,20 +462,6 @@ const Connections = () => {
                   </button>
                 ))}
               </div>
-
-              <div style={styles.solvedGroups}>
-                {solvedGroups.map((group, index) => (
-                  <div 
-                    key={index} 
-                    style={{
-                      ...styles.solvedGroup,
-                      backgroundColor: group.color
-                    }}
-                  >
-                    {group.category}: {group.words.join(', ')}
-                  </div>
-                ))}
-              </div>
             </>
           ) : (
             // Revealed answers view
