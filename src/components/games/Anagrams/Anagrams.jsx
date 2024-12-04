@@ -13,6 +13,7 @@ const AnagramGame = () => {
   const [gameState, setGameState] = useState('start');
   const [wordsList, setWordsList] = useState([]);
   const [showInstructions, setShowInstructions] = useState(false);
+  const timerRef = useRef(null);
 
   const Instructions = () => (
     <div style={styles.instructionsModal}>
@@ -97,8 +98,19 @@ const AnagramGame = () => {
       { base: 'garden', anagrams: ['danger', 'ranged', 'gander'] },
       { base: 'silent', anagrams: ['listen', 'inlets', 'tinsel'] },
       { base: 'master', anagrams: ['stream', 'tamers'] },
-      { base: 'plates', anagrams: ['staple', 'pleats', 'petals'] }
-    ];
+      { base: 'plates', anagrams: ['staple', 'pleats', 'petals'] },
+      { base: 'points', anagrams: ['piston', 'pintos'] },
+      { base: 'spider', anagrams: ['pride', 'spired', 'sprite'] },
+      { base: 'united', anagrams: ['untied', 'dentin'] },
+      { base: 'rescue', anagrams: ['secure', 'recuse'] },
+      { base: 'scared', anagrams: ['sacred', 'cedars'] },
+      { base: 'stream', anagrams: ['master', 'tamers'] },
+      { base: 'notice', anagrams: ['action', 'cation'] },
+      { base: 'player', anagrams: ['parley', 'replay'] },
+      { base: 'remain', anagrams: ['marine', 'airmen'] },
+      { base: 'handle', anagrams: ['healed', 'healed'] },
+      { base: 'caring', anagrams: ['racing', 'gracia'] }
+    ];    
 
     try {
       let word;
@@ -182,10 +194,14 @@ const AnagramGame = () => {
   };
 
   const startTimer = useCallback(() => {
-    const timer = setInterval(() => {
-      setTimeLeft(prev => {
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+    }
+
+    timerRef.current = setInterval(() => {
+      setTimeLeft((prev) => {
         if (prev <= 1) {
-          clearInterval(timer);
+          clearInterval(timerRef.current);
           setGameState('gameOver');
           return 0;
         }
@@ -193,8 +209,12 @@ const AnagramGame = () => {
       });
     }, 1000);
 
-    return () => clearInterval(timer);
-  }, []);
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+    };
+  }, []);  
 
   const handleSubmit = (e) => {
     e.preventDefault();
