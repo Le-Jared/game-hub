@@ -7,7 +7,7 @@ const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
 
 const generateConnectionGroups = async () => {
   const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
-  const prompt = `Generate exactly 16 extremely challenging word connections similar to New York Times Connections puzzle difficulty. Format:
+  const prompt = `Generate exactly 16 moderately challenging word connections similar to New York Times Connections puzzle difficulty. Format:
   [
     {
       "category": "CATEGORY NAME",
@@ -26,38 +26,38 @@ const generateConnectionGroups = async () => {
   
   2. ALL text in UPPERCASE
   
-  3. Make connections EXTREMELY challenging by:
-     - Using words with 3+ possible meanings
-     - Creating deceptive cross-category connections
-     - Including words that could fit multiple categories
-     - Using obscure or specialized knowledge
-     - Adding compound word traps
-     - Including cultural references
-     - Using idiomatic expressions
-     - Incorporating wordplay and puns
+  3. Make connections challenging but solvable by:
+     - Using words with 2-3 possible meanings
+     - Creating logical category connections
+     - Including some words that could fit multiple categories
+     - Using common knowledge and some specialized knowledge
+     - Including familiar cultural references
+     - Using common idioms and expressions
+     - Including simple wordplay
   
   4. Category types to include:
-     - Hidden word patterns (e.g., each word contains "AT")
-     - Meta-categories (e.g., words that can precede another word)
-     - Scientific/technical terms with double meanings
-     - Cultural references that overlap
-     - Compound word formations
-     - Multiple meaning words
-     - Rhyming patterns
-     - Word transformations
+     - Common word patterns
+     - Words that can precede/follow another word
+     - Terms with double meanings
+     - Popular cultural references
+     - Simple compound words
+     - Common multiple meaning words
+     - Basic rhyming patterns
+     - Word associations
   
-  5. Example of increased difficulty:
-     Instead of simple "BREAKFAST FOODS"
-     Use "WORDS THAT CAN FOLLOW 'FRENCH'"
-     (TOAST, PRESS, KISS, HORN)
+  5. Example of moderate difficulty:
+     Instead of "BREAKFAST FOODS"
+     Use "WORDS THAT CAN PRECEDE 'BOX'"
+     (LUNCH, MAIL, TOOL, GIFT)
   
   6. Distribution:
-     - Level 1 (Yellow): 1 group
-     - Level 2 (Blue): 1 group
-     - Level 3 (Purple): 1 group
-     - Level 4 (Orange): 1 group
+     - Level 1 (Yellow): 1 group (Clear, straightforward connection)
+     - Level 2 (Blue): 1 group (Requires some thinking)
+     - Level 3 (Purple): 1 group (Challenging but fair)
+     - Level 4 (Orange): 1 group (Tricky but not obscure)
   
   7. Return ONLY valid JSON with exactly 4 words per group`;
+  
 
   try {
     const result = await model.generateContent(prompt);
