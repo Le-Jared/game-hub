@@ -13,6 +13,10 @@ A collection of interactive word games designed to enhance classroom engagement 
 - **Word Definition** - Match words with their meanings
 - **Memory Game** - Classic card-matching with words
 
+## Screenshot
+![image](https://github.com/user-attachments/assets/eaccdfd7-b5b9-4f9e-ad8f-ab133bcb8552)
+
+
 ## ✨ Acknowledgments
 
 Developed to support interactive learning in classrooms.
